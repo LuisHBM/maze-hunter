@@ -1,21 +1,21 @@
 import pygame
-from enum import Enum
-
-from world import World
 import random
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
+from world import World
 
-class Movement(Enum):
+class Maze():
+    
+    # Colors
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+    RED = (255, 0, 0)
+    BLUE = (0, 0, 255)
+
+    # Movements
     FRONT = 1
     BACK  = 2
     LEFT  = 3
     RIGHT = 4
-
-class Maze():
     
     def __init__(self) -> None:
         
@@ -37,21 +37,21 @@ class Maze():
         px, py = self.world.player.position
         
         # Drawing
-        self.screen.fill(BLACK)
+        self.screen.fill(self.BLACK)
         for row in range(self.world.maze_size):
             for col in range(self.world.maze_size):
                 
                 rect = pygame.Rect(col*self.world.block_size, row*self.world.block_size, self.world.block_size, self.world.block_size)
                 if [col, row] in self.world.walls:
-                    pygame.draw.rect(self.screen, BLACK, rect)
+                    pygame.draw.rect(self.screen, self.BLACK, rect)
                 elif [col, row] in self.world.water:
-                    pygame.draw.rect(self.screen, BLUE, rect)            
+                    pygame.draw.rect(self.screen, self.BLUE, rect)            
                 else:
-                    pygame.draw.rect(self.screen, WHITE, rect)
+                    pygame.draw.rect(self.screen, self.WHITE, rect)
                 if [col, row] == [px, py]:
-                    pygame.draw.rect(self.screen, RED, rect)
+                    pygame.draw.rect(self.screen, self.RED, rect)
                 elif [col, row] in self.world.treasures:
-                    pygame.draw.rect(self.screen, WHITE, rect)
+                    pygame.draw.rect(self.screen, self.WHITE, rect)
                     self.screen.blit(self.world.treasure_image, (col*self.world.block_size, row*self.world.block_size))
                
                     
@@ -91,13 +91,13 @@ class Maze():
         move = random.randint(1, 4)
         
         player_pos = self.world.player.position
-        if move == Movement.FRONT.value:
+        if move == self.FRONT:
             next_pos = (player_pos[0], player_pos[1] + 1) 
-        elif move == Movement.BACK.value:
+        elif move == self.BACK:
             next_pos = (player_pos[0], player_pos[1] - 1) 
-        elif move == Movement.RIGHT.value:
+        elif move == self.RIGHT:
             next_pos = (player_pos[0] + 1, player_pos[1]) 
-        elif move == Movement.LEFT.value:
+        elif move == self.LEFT:
             next_pos = (player_pos[0] - 1, player_pos[1]) 
         else:
             print(f"Movement {move} doesn't exist.")
