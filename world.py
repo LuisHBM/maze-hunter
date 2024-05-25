@@ -15,6 +15,7 @@ class World():
         self.height = 800
         self.maze_size = 20
         self.block_size = self.width // self.maze_size
+        self.map = [[0 for _ in range(self.maze_size)] for _ in range(self.maze_size)]
         
         # Game objects
         self.num_treasures = 12
@@ -39,6 +40,7 @@ class World():
                 treasure = [random.randint(0, self.maze_size-1), random.randint(0, self.maze_size-1)]
                 if treasure not in self.treasures and treasure != self.player.position:
                     self.treasures.append(treasure)
+                    x, y = treasure
                     break
     
     def generate_player(self):
@@ -57,7 +59,8 @@ class World():
                 and [i,j] not in self.treasures \
                 and random.choice([True, False, False]):  
                     self.walls.append([i, j])
-    
+                    self.map[i][j] = 1
+        
     def generate_water(self):
         
         self.water = []
