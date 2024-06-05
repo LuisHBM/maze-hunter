@@ -16,7 +16,7 @@ class Maze():
     PATH_WATER_COLOR = (0, 200, 100)
 
     # Movements
-    FRONT = 1
+    UP = 1
     BACK  = 2
     LEFT  = 3
     RIGHT = 4
@@ -93,7 +93,7 @@ class Maze():
         move = random.randint(1, 4)
         
         player_pos = self.world.player.position
-        if move == self.FRONT:
+        if move == self.UP:
             next_pos = (player_pos[0], player_pos[1] + 1) 
         elif move == self.BACK:
             next_pos = (player_pos[0], player_pos[1] - 1) 
@@ -121,7 +121,7 @@ class Maze():
             
             x, y = self.world.player.position
             if pos[1] == y + 1:
-                movement = self.FRONT
+                movement = self.UP
             elif pos[1] == y - 1:
                 movement = self.BACK
             elif pos[0] == x + 1:
@@ -172,7 +172,7 @@ class Maze():
                 move = self.move_to(target)
                 
                 if move != 0:
-                    print(f"Moveu: {move}")
+                    print(f"Movement: {move}")
                     self.update_score()
                     self.steps += 1
                 
@@ -201,6 +201,7 @@ class Maze():
         print(f"Found {found_treasures} treasures")
         print(f"Final score: {self.score}")
         pygame.quit()
+
 
 if __name__ == "__main__":
     
