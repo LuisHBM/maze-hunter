@@ -3,90 +3,123 @@ class Node():
     def __init__(self):
         
         self.parent: Node = None
-        self.parentIndex: list = None
+        self.parent_index: list = None
         self.cost: int = 0
         self.has_expanded: bool = False
 
 
 class Dijkstra():
     
-    def __init__(self, matrix) -> None:
+    def __init__(self, matrix: list[list], legend: dict) -> None:
         self.matrix = matrix
-        self.fila = []
+        self.legend: dict = legend
+        self.nodes = []
+        self.queue = []
         
-        self.lim_cima = 0
-        self.lim_baixo = len(self.matrix[0]) - 1
-        self.lim_esq = 0
-        self.lim_dir = len(self.matrix[0]) - 1
+        self.up_limit = 0
+        self.down_limit = len(self.matrix[0]) - 1
+        self.left_limit = 0
+        self.right_limit = len(self.matrix[0]) - 1
     
     
-    def expandir(self, matrix: list, nodeAtualPos: list, nodeExpandidoPos: list):
-        nodeAtual: Node = matrix[nodeAtualPos[0]][nodeAtualPos[1]]
-        nodeExpandido: Node = matrix[nodeExpandidoPos[0]][nodeExpandidoPos[1]]
-
-
-        nodeExpandido.parent = nodeAtual
-        nodeExpandido.parentIndex = nodeAtualPos
-        nodeExpandido.cost = nodeExpandido.parent.cost + 1
-        nodeExpandido.has_expanded = True
-
-        self.fila.append(nodeExpandidoPos)
-
-
-    def shortest_path(self, start: list, target: list):
+    def sort_queue(self):
+        size = len(self.queue)
         
-        self.fila = []
+        for i in range(0, size):
+            for j in range(i+1, size):
+                x1, y1 = self.queue[j]
+                x2, y2 = self.queue[i]
+                if self.nodes[x1][y1].cost < self.nodes[x2][y2].cost:
+                    self.queue[j], self.queue[i] =  self.queue[i], self.queue[j]
+    
+    
+    def expand(self, current_node_pos: list, expanded_node_pos: list):
+        x1, y1 = current_node_pos
+        x2, y2 = expanded_node_pos
 
-        nodes = [[Node() for _ in range(len(self.matrix))] for _ in range(len(self.matrix))]
-        nodes[start[0]][start[1]].has_expanded = True
-        
-        nodeAtual = start
-        
+        current_node: Node = self.nodes[x1][y1]
+        expanded_node: Node = self.nodes[x2][y2]
 
-        while nodeAtual != target:
+        expanded_node.parent = current_node
+        expanded_node.parent_index = current_node_pos
+        expanded_node.cost = expanded_node.parent.cost + (1 if self.matrix[x2][y2] == self.legend["EMPTY"] else 5) 
+        expanded_node.has_expanded = True
+
+        self.queue.append(expanded_node_pos)
+        self.sort_queue()
+
+
+    def shortest_path(self, start: list, targets: list):
+        
+        self.queue = []
+
+        # Initializing nodes
+        self.nodes = [[Node() for _ in range(len(self.matrix))] for _ in range(len(self.matrix))]
+        self.nodes[start[0]][start[1]].has_expanded = True
+        
+        current_node = start
+        target_reached = start
+
+        while True:
             
-            linhaAtual = nodeAtual[0]
-            colunaAtual = nodeAtual[1]
+            if current_node in targets:
+                target_reached = current_node
+                break
+            
+            current_line = current_node[0]
+            current_column = current_node[1]
+            
+            """
+        
+            Expanding nodes
+            
+            """
 
-            #cima
-            cima = [linhaAtual - 1, colunaAtual]
-            linhaCima = cima[0]
-            colunaCima = cima[1]
-            if (linhaCima >= self.lim_cima) and self.matrix[linhaCima][colunaCima] != 1 and nodes[linhaCima][colunaCima].has_expanded == False:
-                self.expandir(nodes, nodeAtual, cima)
+            # Expands to up
+            up = [current_line - 1, current_column]
+            line_up = up[0]
+            column_up = up[1]
+            if (line_up >= self.up_limit) and self.matrix[line_up][column_up] != 1 and self.nodes[line_up][column_up].has_expanded == False:
+                self.expand(current_node, up)
 
-            #esquerda
-            esquerda = [linhaAtual, colunaAtual - 1]
-            linhaEsquerda = esquerda[0]
-            colunaEsquerda = esquerda[1]
-            if (colunaEsquerda >= self.lim_esq) and self.matrix[linhaEsquerda][colunaEsquerda] != 1 and nodes[linhaEsquerda][colunaEsquerda].has_expanded == False:
-                self.expandir(nodes, nodeAtual, esquerda)
+            # Expands to left
+            left = [current_line, current_column - 1]
+            line_left = left[0]
+            column_left = left[1]
+            if (column_left >= self.left_limit) and self.matrix[line_left][column_left] != 1 and self.nodes[line_left][column_left].has_expanded == False:
+                self.expand(current_node, left)
 
-            #baixo
-            baixo = [linhaAtual + 1, colunaAtual]
-            linhaBaixo = baixo[0]
-            colunaBaixo = baixo[1]
-            if (linhaBaixo <= self.lim_baixo) and self.matrix[linhaBaixo][colunaBaixo] != 1 and nodes[linhaBaixo][colunaBaixo].has_expanded == False:
-                self.expandir(nodes, nodeAtual, baixo)
+            # Expands to down
+            down = [current_line + 1, current_column]
+            line_down = down[0]
+            column_down = down[1]
+            if (line_down <= self.down_limit) and self.matrix[line_down][column_down] != 1 and self.nodes[line_down][column_down].has_expanded == False:
+                self.expand(current_node, down)
 
-            #direita
-            direita = [linhaAtual, colunaAtual + 1]
-            linhaDireita = direita[0]
-            colunaDireita = direita[1]
-            if (colunaDireita <= self.lim_dir) and self.matrix[linhaDireita][colunaDireita] != 1 and nodes[linhaDireita][colunaDireita].has_expanded == False:
-                self.expandir(nodes, nodeAtual, direita)
+            # Expands to right
+            right = [current_line, current_column + 1]
+            line_right = right[0]
+            column_right = right[1]
+            if (column_right <= self.right_limit) and self.matrix[line_right][column_right] != 1 and self.nodes[line_right][column_right].has_expanded == False:
+                self.expand(current_node, right)
 
-            if len(self.fila) > 0:
-                nodeAtual = self.fila.pop(0)
+            if len(self.queue) > 0:
+                current_node = self.queue.pop(0)
 
+        """
+        
+        Retrace the path taken by Dijkstra
+        
+        """
+        
         shortest_path = []
-        while nodeAtual != start:
-            nodeAtualObj = nodes[nodeAtual[0]][nodeAtual[1]]
-            parentIndex = nodeAtualObj.parentIndex
-            shortest_path.append(parentIndex)
-            nodeAtual = parentIndex
+        while current_node != start:
+            current_node_object = self.nodes[current_node[0]][current_node[1]]
+            parent_index = current_node_object.parent_index
+            shortest_path.append(parent_index)
+            current_node = parent_index
         
         shortest_path = shortest_path[::-1]
-        shortest_path.append(target)
+        shortest_path.append(target_reached)
         
         return shortest_path

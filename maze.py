@@ -35,7 +35,7 @@ class Maze():
         
         # Path planning
         self.path = []
-        self.dijkstra = Dijkstra(self.world.map)
+        self.dijkstra = Dijkstra(self.world.map, self.world.legend)
         
         self.draw_world()
         
@@ -150,25 +150,26 @@ class Maze():
         return [x_closest, y_closest]
         
     
-    def calculate_path(self, treasure_pos: list):
+    def calculate_path(self):
          
         player_pos = self.world.player.position
         
-        self.path = self.dijkstra.shortest_path(player_pos, treasure_pos)
+        self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
     
     
     def game_loop(self):
         
         while(self.running):
             
-            self.calculate_path(self.get_closest_treasure())
+            self.calculate_path()
             
             while (len(self.path) > 0):
             
                 print(f"Step: {self.steps}")
                 print(f"Score: {self.score}")
                 
-                move = self.move_to(self.path.pop(0))
+                target = self.path.pop(0)
+                move = self.move_to(target)
                 
                 if move != 0:
                     print(f"Moveu: {move}")
@@ -189,8 +190,7 @@ class Maze():
                 
                 self.draw_world()
                 pygame.display.flip()
-                pygame.time.wait(100)  # Slow down the game a bit
-                
+                pygame.time.wait(100)  # Slow down the game a bit 
         
         print(f" ")
         print(f"Step: {self.steps}")
