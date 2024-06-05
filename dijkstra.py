@@ -114,7 +114,8 @@ class Dijkstra():
         
         shortest_path = []
         while current_node != start:
-            current_node_object = self.nodes[current_node[0]][current_node[1]]
+            x, y = current_node
+            current_node_object = self.nodes[x][y]
             parent_index = current_node_object.parent_index
             shortest_path.append(parent_index)
             current_node = parent_index
