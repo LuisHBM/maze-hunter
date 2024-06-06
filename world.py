@@ -13,7 +13,7 @@ class World():
         # World measurements
         self.width = 800
         self.height = 800
-        self.maze_size = 20
+        self.maze_size = 30
         self.block_size = self.width // self.maze_size
         
         # Game objects

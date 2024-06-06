@@ -6,7 +6,6 @@ class AbsNode(ABC):
         
         self.parent: AbsNode = None
         self.index: list = None
-        self.has_expanded: bool = False
 
 
 class PathPlanning(ABC):
@@ -40,7 +39,7 @@ class PathPlanning(ABC):
                      Down
         """
     
-    def expand(self, current_node_pos: list, expanded_node_pos: list):
+    def expand(self, current_node_pos: list, expanded_node_pos: list, target_position: list):
         x1, y1 = current_node_pos
         x2, y2 = expanded_node_pos
 
@@ -49,8 +48,7 @@ class PathPlanning(ABC):
 
         expanded_node.parent = current_node
         expanded_node.parent.index = current_node_pos
-        expanded_node.has_expanded = True
-        self.update_cost(expanded_node, expanded_node_pos)
+        self.update_cost(expanded_node, expanded_node_pos, target_position)
 
         self.queue.append(expanded_node_pos)
         self.sort_queue()
@@ -61,7 +59,7 @@ class PathPlanning(ABC):
         pass
     
     @abstractmethod
-    def update_cost(self, node, node_index, target_position=None):
+    def update_cost(self, node, node_index, target_position):
         pass
     
     @abstractmethod

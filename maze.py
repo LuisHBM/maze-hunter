@@ -1,9 +1,15 @@
+# Extenal libraries
 import pygame
 import random
+import sys
+import os
 
+# Internal libraries
 from world import World
 from dijkstra import Dijkstra
+from astar import AStar
 
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 class Maze():
     
@@ -21,6 +27,11 @@ class Maze():
     LEFT  = 3
     RIGHT = 4
     
+    # Modes
+    NONE = 0
+    DIJKSTRA = 1
+    ASTAR = 2
+    
     def __init__(self) -> None:
         
         self.world = World()
@@ -36,9 +47,12 @@ class Maze():
         # Path planning
         self.path = []
         self.dijkstra = Dijkstra(self.world.map, self.world.legend)
+        self.astar = AStar(self.world.map, self.world.legend)
         
         self.draw_world()
         
+        self.mode = 0
+
         
     def draw_world(self):
         
@@ -154,11 +168,14 @@ class Maze():
          
         player_pos = self.world.player.position
         
-        self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
+        if self.mode == self.ASTAR:
+            self.path = self.astar.shortest_path(player_pos, self.get_closest_treasure())
+        elif self.mode == self.DIJKSTRA:
+            self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
     
     
     def game_loop(self):
-        
+
         while(self.running):
             
             self.calculate_path()
@@ -186,16 +203,15 @@ class Maze():
                 #    print(f"Maximum number of steps {steps}")
                 #    self.running = False
 
-                print(f" ")
+                print("")
                 
                 self.draw_world()
                 pygame.display.flip()
                 pygame.time.wait(100)  # Slow down the game a bit 
         
-        print(f" ")
         print(f"Step: {self.steps}")
         print(f"Score: {self.score}")
-        print(f" ")
+        print("")
         
         found_treasures = self.world.num_treasures - len(self.world.treasures)
         print(f"Found {found_treasures} treasures")
@@ -205,6 +221,19 @@ class Maze():
 
 if __name__ == "__main__":
     
-    maze = Maze()
+    mode = int(sys.argv[1])
+    print(f"Choosed mode: {mode}")
     
+    print("Chosen mode: ", end="")
+    if(mode == Maze.ASTAR):
+        print("Astar")
+    elif(mode == Maze.DIJKSTRA):
+        print("Dijkstra")
+    else:
+        print("None")
+    
+    input("Press enter to continue...")
+    
+    maze = Maze()
+    maze.mode = mode
     maze.game_loop()

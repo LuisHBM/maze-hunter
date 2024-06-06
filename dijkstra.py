@@ -12,7 +12,7 @@ class Dijkstra(PathPlanning):
         super().__init__(matrix, legend)
     
     
-    def update_cost(self, node: Node, node_index: list, target_position=None):
+    def update_cost(self, node: Node, node_index: list, target_position: list):
         x, y = node_index
         node.g_cost = node.parent.g_cost + (1 if self.matrix[x][y] == self.legend["EMPTY"] else 5) 
 
@@ -37,8 +37,8 @@ class Dijkstra(PathPlanning):
         self.queue = []
 
         # Initializing nodes
-        self.nodes = [[Node() for _ in range(len(self.matrix))] for _ in range(len(self.matrix))]
-        self.nodes[start[0]][start[1]].has_expanded = True
+        self.nodes = [[None for _ in range(len(self.matrix))] for _ in range(len(self.matrix))]
+        self.nodes[start[0]][start[1]] = Node()
         
         current_node = start
         target_reached = start
@@ -63,32 +63,36 @@ class Dijkstra(PathPlanning):
             up = [current_row - 1, current_column]
             row_up, column_up = up
             
-            if (row_up >= self.up_limit) and self.matrix[row_up][column_up] != self.legend["WALL"] and self.nodes[row_up][column_up].has_expanded == False:
-                self.expand(current_node, up)
+            if (row_up >= self.up_limit) and self.matrix[row_up][column_up] != self.legend["WALL"] and self.nodes[row_up][column_up] == None:
+                self.nodes[row_up][column_up] = Node()
+                self.expand(current_node, up, None)
             
             # Expands to left ====================================  
             
             left = [current_row, current_column - 1]
             row_left, column_left = left
             
-            if (column_left >= self.left_limit) and self.matrix[row_left][column_left] != self.legend["WALL"] and self.nodes[row_left][column_left].has_expanded == False:
-                self.expand(current_node, left)
+            if (column_left >= self.left_limit) and self.matrix[row_left][column_left] != self.legend["WALL"] and self.nodes[row_left][column_left] == None:
+                self.nodes[row_left][column_left] = Node()
+                self.expand(current_node, left, None)
             
             # Expands to down ====================================  
             
             down = [current_row + 1, current_column]
             row_down, column_down = down
             
-            if (row_down <= self.down_limit) and self.matrix[row_down][column_down] != self.legend["WALL"] and self.nodes[row_down][column_down].has_expanded == False:
-                self.expand(current_node, down)
+            if (row_down <= self.down_limit) and self.matrix[row_down][column_down] != self.legend["WALL"] and self.nodes[row_down][column_down] == None:
+                self.nodes[row_down][column_down] = Node()
+                self.expand(current_node, down, None)
 
             # Expands to right ====================================  
             
             right = [current_row, current_column + 1]
             row_right, column_right = right
             
-            if (column_right <= self.right_limit) and self.matrix[row_right][column_right] != self.legend["WALL"] and self.nodes[row_right][column_right].has_expanded == False:
-                self.expand(current_node, right)
+            if (column_right <= self.right_limit) and self.matrix[row_right][column_right] != self.legend["WALL"] and self.nodes[row_right][column_right] == None:
+                self.nodes[row_right][column_right] = Node()
+                self.expand(current_node, right, None)
             
             # Gets next node position to expand
 
