@@ -32,9 +32,9 @@ class Maze():
     DIJKSTRA = 1
     ASTAR = 2
     
-    def __init__(self) -> None:
+    def __init__(self, maze_seed: int) -> None:
         
-        self.world = World()
+        self.world = World(maze_seed)
         self.running = True
         self.score = 0
         self.steps = 0
@@ -81,7 +81,12 @@ class Maze():
                     if [col, row] not in self.path:
                         pygame.draw.rect(self.screen, self.GROUND_COLOR, rect)
                     self.screen.blit(self.world.treasure_image, (col*self.world.block_size, row*self.world.block_size))
-               
+    
+    
+    def print_score(self):
+        print(f"Step: {self.steps}")
+        print(f"Score: {self.score}")
+    
                     
     def update_score(self):
         
@@ -93,6 +98,7 @@ class Maze():
             self.world.treasures.remove([px, py])
             print("Treasure found! Treasures left:", len(self.world.treasures))
             self.score += 50
+            self.print_score()
             
         if [px, py] in self.world.water:
             self.score -= 5
@@ -148,28 +154,28 @@ class Maze():
         return movement
     
     
-    def get_closest_treasure(self) -> list:
+    def filtered_treasures(self) -> list:
         
-        x_player, y_player = self.world.player.position
-        x_closest, y_closest = self.world.treasures[0]
-        d1 = ((x_closest - x_player)**2 + (y_closest - y_player)**2)**0.5
+        filtered_treasures = []
         
-        for n in range(1, len(self.world.treasures)):
-            x, y = self.world.treasures[n]
-            d2 = ((x - x_player)**2 + (y - y_player)**2)**0.5
-            if d2 < d1:
-                x_closest, y_closest = self.world.treasures[n]
-                d1 = d2
+        for treasure_pos in self.world.treasures:
+            x, y = treasure_pos
+            is_stuck = self.world.map[x-1][y] == self.world.legend["WALL"] if x-1 >= 0 else True
+            is_stuck = is_stuck and (self.world.map[x+1][y] == self.world.legend["WALL"] if x+1 < self.world.maze_size  else True)
+            is_stuck = is_stuck and (self.world.map[x][y-1] == self.world.legend["WALL"] if y-1 >= 0 else True)
+            is_stuck = is_stuck and (self.world.map[x][y+1] == self.world.legend["WALL"] if y+1 < 0 else True)
             
-        return [x_closest, y_closest]
+            if not is_stuck:
+                filtered_treasures.append(treasure_pos)
         
+        return filtered_treasures             
     
     def calculate_path(self):
          
         player_pos = self.world.player.position
         
         if self.mode == self.ASTAR:
-            self.path = self.astar.shortest_path(player_pos, self.get_closest_treasure())
+            self.path = self.astar.shortest_path(player_pos, self.filtered_treasures())
         elif self.mode == self.DIJKSTRA:
             self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
     
@@ -178,18 +184,21 @@ class Maze():
 
         while(self.running):
             
+            self.draw_world()
+            pygame.display.flip()
+            
             self.calculate_path()
             
             while (len(self.path) > 0):
             
-                print(f"Step: {self.steps}")
-                print(f"Score: {self.score}")
+                #print(f"Step: {self.steps}")
+                #print(f"Score: {self.score}")
                 
                 target = self.path.pop(0)
                 move = self.move_to(target)
                 
                 if move != 0:
-                    print(f"Movement: {move}")
+                    #print(f"Movement: {move}")
                     self.update_score()
                     self.steps += 1
                 
@@ -202,16 +211,14 @@ class Maze():
                 #if self.steps >= 800: 
                 #    print(f"Maximum number of steps {steps}")
                 #    self.running = False
-
-                print("")
                 
                 self.draw_world()
                 pygame.display.flip()
                 pygame.time.wait(100)  # Slow down the game a bit 
         
-        print(f"Step: {self.steps}")
-        print(f"Score: {self.score}")
-        print("")
+        #print(f"Step: {self.steps}")
+        #print(f"Score: {self.score}")
+        #print("")
         
         found_treasures = self.world.num_treasures - len(self.world.treasures)
         print(f"Found {found_treasures} treasures")
@@ -221,8 +228,9 @@ class Maze():
 
 if __name__ == "__main__":
     
+    os.system("clear")
+    
     mode = int(sys.argv[1])
-    print(f"Choosed mode: {mode}")
     
     print("Chosen mode: ", end="")
     if(mode == Maze.ASTAR):
@@ -231,9 +239,8 @@ if __name__ == "__main__":
         print("Dijkstra")
     else:
         print("None")
+    print("")
     
-    input("Press enter to continue...")
-    
-    maze = Maze()
+    maze = Maze(800)
     maze.mode = mode
     maze.game_loop()

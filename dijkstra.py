@@ -39,7 +39,7 @@ class Dijkstra(PathPlanning):
         # Initializing nodes
         self.nodes = [[None for _ in range(len(self.matrix))] for _ in range(len(self.matrix))]
         self.nodes[start[0]][start[1]] = Node()
-        
+
         current_node = start
         target_reached = start
 

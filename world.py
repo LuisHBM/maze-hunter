@@ -8,13 +8,14 @@ class Player():
 
 class World():
     
-    def __init__(self) -> None:
+    def __init__(self, seed=0) -> None:
                 
         # World measurements
         self.width = 800
         self.height = 800
         self.maze_size = 30
         self.block_size = self.width // self.maze_size
+        random.seed(seed)
         
         # Game objects
         self.num_treasures = 12
