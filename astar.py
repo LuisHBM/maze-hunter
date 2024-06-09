@@ -1,6 +1,7 @@
 import sys
 
 from pathplanning import AbsNode, PathPlanning
+from world import World
 
 class Node(AbsNode):
     
@@ -14,8 +15,8 @@ class Node(AbsNode):
 
 class AStar(PathPlanning):
     
-    def __init__(self, matrix: list[list], legend: dict) -> None:
-        super().__init__(matrix, legend)
+    def __init__(self, world: World) -> None:
+        super().__init__(world)
 
         
     def update_cost(self, node: Node, node_index: list, target_pos: list):
@@ -77,20 +78,23 @@ class AStar(PathPlanning):
         lower_cost = sys.maxsize
         path = []
         
+        # Initializing nodes
+        self.nodes = [[None for _ in range(matrix_size)] for _ in range(matrix_size)]
+        self.nodes[start[0]][start[1]] = Node()
+        self.queue = []
+        
         for n in range(num_of_targets):
             target = targets[n]
-            self.queue = []
+            target_x, target_y = target
+            
+            final_node = self.nodes[target_x][target_y]
+            has_expanded = False
+            if final_node:
+                target_reached = [target_x, target_y]
+                has_expanded = True
 
-            # Initializing nodes
-            self.nodes = [[None for _ in range(matrix_size)] for _ in range(matrix_size)]
-            self.nodes[start[0]][start[1]] = Node()
-            
             current_node = start
-            
-            while True:
-                
-                if current_node == target:
-                    break
+            while not has_expanded:
                 
                 current_row = current_node[0]
                 current_column = current_node[1]
@@ -108,7 +112,11 @@ class AStar(PathPlanning):
                 
                 if (row_up >= self.up_limit) and self.matrix[row_up][column_up] != self.legend["WALL"] and self.nodes[row_up][column_up] == None:
                     self.nodes[row_up][column_up] = Node()
+                    target_reached = [row_up, column_up] if [row_up, column_up] == target else None
                     self.expand(current_node, up, target)
+                    
+                    if target_reached:
+                        break         
                 
                 # Expands to left ====================================  
                 
@@ -117,7 +125,11 @@ class AStar(PathPlanning):
                 
                 if (column_left >= self.left_limit) and self.matrix[row_left][column_left] != self.legend["WALL"] and self.nodes[row_left][column_left] == None:
                     self.nodes[row_left][column_left] = Node()
+                    target_reached = [row_left, column_left] if [row_left, column_left] == target else None
                     self.expand(current_node, left, target)
+                    
+                    if target_reached:
+                        break
                 
                 # Expands to down ====================================  
                 
@@ -126,7 +138,11 @@ class AStar(PathPlanning):
                 
                 if (row_down <= self.down_limit) and self.matrix[row_down][column_down] != self.legend["WALL"] and self.nodes[row_down][column_down] == None:
                     self.nodes[row_down][column_down] = Node()
+                    target_reached = [row_down, column_down] if [row_down, column_down] == target else None
                     self.expand(current_node, down, target)
+                    
+                    if target_reached:
+                        break
 
                 # Expands to right ====================================  
                 
@@ -135,7 +151,11 @@ class AStar(PathPlanning):
                 
                 if (column_right <= self.right_limit) and self.matrix[row_right][column_right] != self.legend["WALL"] and self.nodes[row_right][column_right] == None:
                     self.nodes[row_right][column_right] = Node()
+                    target_reached = [row_right, column_right] if [row_right, column_right] == target else None
                     self.expand(current_node, right, target)
+                    
+                    if target_reached:
+                        break
                 
                 # Gets next node position to expand
 
@@ -149,11 +169,11 @@ class AStar(PathPlanning):
             """
             
             # Current node will be the last node
-            x, y = current_node
+            x, y = target_reached
             cost = self.nodes[x][y].get_f_cost()
             
             if cost <= lower_cost:
                 lower_cost = cost
-                path = self.reconstruct_path(start, target, current_node)
+                path = self.reconstruct_path(start, target, self.nodes[x][y])
         
         return path

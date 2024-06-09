@@ -13,14 +13,6 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 class Maze():
     
-    # Colors
-    WALL_COLOR = (0, 0, 0)
-    GROUND_COLOR = (255, 255, 255)
-    PLAYER_COLOR = (255, 0, 0)
-    WATER_COLOR = (0, 0, 255)
-    PATH_COLOR = (0, 255, 0)
-    PATH_WATER_COLOR = (0, 200, 100)
-
     # Movements
     UP = 1
     BACK  = 2
@@ -39,54 +31,20 @@ class Maze():
         self.score = 0
         self.steps = 0
         
-        # Initializing pygame
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.world.width, self.world.height))
-        pygame.display.set_caption('Maze Treasure Hunt')
-        
         # Path planning
         self.path = []
-        self.dijkstra = Dijkstra(self.world.map, self.world.legend)
-        self.astar = AStar(self.world.map, self.world.legend)
+        self.dijkstra = Dijkstra(self.world)
+        self.astar = AStar(self.world)
         
-        self.draw_world()
+        self.world.draw_world()
         
         self.mode = 0
-
-        
-    def draw_world(self):
-        
-        px, py = self.world.player.position
-        
-        # Drawing
-        self.screen.fill(self.WALL_COLOR)
-        for row in range(self.world.maze_size):
-            for col in range(self.world.maze_size):
-                
-                rect = pygame.Rect(col*self.world.block_size, row*self.world.block_size, self.world.block_size, self.world.block_size)
-                if [col, row] in self.path:
-                    if [col, row] not in self.world.water:
-                        pygame.draw.rect(self.screen, self.PATH_COLOR, rect)
-                    else:
-                        pygame.draw.rect(self.screen, self.PATH_WATER_COLOR, rect)
-                elif [col, row] in self.world.walls:
-                    pygame.draw.rect(self.screen, self.WALL_COLOR, rect)
-                elif [col, row] in self.world.water:
-                    pygame.draw.rect(self.screen, self.WATER_COLOR, rect)            
-                else:
-                    pygame.draw.rect(self.screen, self.GROUND_COLOR, rect)
-                if [col, row] == [px, py]:
-                    pygame.draw.rect(self.screen, self.PLAYER_COLOR, rect)
-                elif [col, row] in self.world.treasures:
-                    if [col, row] not in self.path:
-                        pygame.draw.rect(self.screen, self.GROUND_COLOR, rect)
-                    self.screen.blit(self.world.treasure_image, (col*self.world.block_size, row*self.world.block_size))
     
     
     def print_score(self):
         print(f"Step: {self.steps}")
         print(f"Score: {self.score}")
-    
+  
                     
     def update_score(self):
         
@@ -184,7 +142,7 @@ class Maze():
 
         while(self.running):
             
-            self.draw_world()
+            self.world.draw_world(self.path)
             pygame.display.flip()
             
             self.calculate_path()
@@ -212,7 +170,7 @@ class Maze():
                 #    print(f"Maximum number of steps {steps}")
                 #    self.running = False
                 
-                self.draw_world()
+                self.world.draw_world(self.path)
                 pygame.display.flip()
                 pygame.time.wait(100)  # Slow down the game a bit 
         

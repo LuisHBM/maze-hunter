@@ -1,4 +1,5 @@
 from pathplanning import AbsNode, PathPlanning
+from world import World
 
 class Node(AbsNode):
     
@@ -8,8 +9,8 @@ class Node(AbsNode):
 
 class Dijkstra(PathPlanning):
     
-    def __init__(self, matrix: list[list], legend: dict) -> None:
-        super().__init__(matrix, legend)
+    def __init__(self, world: World) -> None:
+        super().__init__(world)
     
     
     def update_cost(self, node: Node, node_index: list, target_position: list):
@@ -30,10 +31,9 @@ class Dijkstra(PathPlanning):
                 
                 if node_j.g_cost < node_i.g_cost:
                     self.queue[j], self.queue[i] =  self.queue[i], self.queue[j]
-
+            
 
     def shortest_path(self, start: list, targets: list):
-        
         self.queue = []
 
         # Initializing nodes
@@ -44,10 +44,6 @@ class Dijkstra(PathPlanning):
         target_reached = start
 
         while True:
-            
-            if current_node in targets:
-                target_reached = current_node
-                break
             
             current_row = current_node[0]
             current_column = current_node[1]
@@ -65,7 +61,11 @@ class Dijkstra(PathPlanning):
             
             if (row_up >= self.up_limit) and self.matrix[row_up][column_up] != self.legend["WALL"] and self.nodes[row_up][column_up] == None:
                 self.nodes[row_up][column_up] = Node()
+                target_reached = [row_up, column_up] if [row_up, column_up] in targets else None
                 self.expand(current_node, up, None)
+                
+                if target_reached:
+                    break         
             
             # Expands to left ====================================  
             
@@ -74,7 +74,11 @@ class Dijkstra(PathPlanning):
             
             if (column_left >= self.left_limit) and self.matrix[row_left][column_left] != self.legend["WALL"] and self.nodes[row_left][column_left] == None:
                 self.nodes[row_left][column_left] = Node()
+                target_reached = [row_left, column_left] if [row_left, column_left] in targets else None
                 self.expand(current_node, left, None)
+                
+                if target_reached:
+                    break
             
             # Expands to down ====================================  
             
@@ -83,7 +87,11 @@ class Dijkstra(PathPlanning):
             
             if (row_down <= self.down_limit) and self.matrix[row_down][column_down] != self.legend["WALL"] and self.nodes[row_down][column_down] == None:
                 self.nodes[row_down][column_down] = Node()
+                target_reached = [row_down, column_down] if [row_down, column_down] in targets else None
                 self.expand(current_node, down, None)
+                
+                if target_reached:
+                    break
 
             # Expands to right ====================================  
             
@@ -92,11 +100,16 @@ class Dijkstra(PathPlanning):
             
             if (column_right <= self.right_limit) and self.matrix[row_right][column_right] != self.legend["WALL"] and self.nodes[row_right][column_right] == None:
                 self.nodes[row_right][column_right] = Node()
+                target_reached = [row_right, column_right] if [row_right, column_right] in targets else None
                 self.expand(current_node, right, None)
+                
+                if target_reached:
+                    break
             
             # Gets next node position to expand
 
             if len(self.queue) > 0:
                 current_node = self.queue.pop(0)
         
-        return self.reconstruct_path(start, target_reached, current_node)
+        x, y = target_reached
+        return self.reconstruct_path(start, target_reached, self.nodes[x][y])

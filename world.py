@@ -8,12 +8,21 @@ class Player():
 
 class World():
     
+        
+    # Colors
+    WALL_COLOR = (0, 0, 0)
+    GROUND_COLOR = (255, 255, 255)
+    PLAYER_COLOR = (255, 0, 0)
+    WATER_COLOR = (0, 0, 255)
+    PATH_COLOR = (0, 255, 0)
+    PATH_WATER_COLOR = (0, 200, 100)
+    
     def __init__(self, seed=0) -> None:
                 
         # World measurements
         self.width = 800
         self.height = 800
-        self.maze_size = 30
+        self.maze_size = 20
         self.block_size = self.width // self.maze_size
         random.seed(seed)
         
@@ -33,6 +42,11 @@ class World():
         self.generate_treasures()
         self.generate_water()
         self.generate_walls()
+        
+        # Pygame 
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption('Maze Treasure Hunt')
     
     
     def generate_treasures(self):
@@ -81,6 +95,32 @@ class World():
             for j in range(start_y, start_y + water_size):
                 self.water.append([i, j])
                 self.map[i][j] = self.legend["WATER"]
+    
+    
+    def draw_world(self, path=None):
+        px, py = self.player.position
+        
+        # Drawing
+        self.screen.fill(self.WALL_COLOR)
+        for row in range(self.maze_size):
+            for col in range(self.maze_size):
+                
+                rect = pygame.Rect(col*self.block_size, row*self.block_size, self.block_size, self.block_size)
+                if path is not None and [col, row] in path:
+                    if [col, row] not in self.water:
+                        pygame.draw.rect(self.screen, self.PATH_COLOR, rect)
+                    else:
+                        pygame.draw.rect(self.screen, self.PATH_WATER_COLOR, rect)
+                elif [col, row] in self.walls:
+                    pygame.draw.rect(self.screen, self.WALL_COLOR, rect)
+                elif [col, row] in self.water:
+                    pygame.draw.rect(self.screen, self.WATER_COLOR, rect)            
+                else:
+                    pygame.draw.rect(self.screen, self.GROUND_COLOR, rect)
+                if [col, row] == [px, py]:
+                    pygame.draw.rect(self.screen, self.PLAYER_COLOR, rect)
+                if [col, row] in self.treasures:
+                    self.screen.blit(self.treasure_image, (col*self.block_size, row*self.block_size))
                 
     def can_move_to(self, position) -> bool:
         

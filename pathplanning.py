@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import pygame
+
+from world import World
 
 class AbsNode(ABC):
     
@@ -10,9 +13,12 @@ class AbsNode(ABC):
 
 class PathPlanning(ABC):
     
-    def __init__(self, matrix: list[list], legend: dict) -> None:
-        self.matrix = matrix
-        self.legend: dict = legend
+    EXPANDED_NODE_COLOR = (255, 192, 203)
+    
+    def __init__(self, world: World) -> None:
+        self.world = world
+        self.matrix = self.world.map
+        self.legend: dict = self.world.legend
         self.nodes = []
         self.queue = []
         
@@ -20,6 +26,7 @@ class PathPlanning(ABC):
         self.down_limit = len(self.matrix) - 1
         self.left_limit = 0
         self.right_limit = len(self.matrix[0]) - 1
+        self.nodes_count = 0
         
         """
         Limits:
@@ -38,6 +45,16 @@ class PathPlanning(ABC):
                 --------------
                      Down
         """
+    def draw_expansion(self):
+        self.world.draw_world()
+        player_x, player_y = self.world.player.position
+        
+        for row in range(self.world.maze_size):
+            for col in range(self.world.maze_size):
+                rect = pygame.Rect(col*self.world.block_size, row*self.world.block_size, self.world.block_size, self.world.block_size)
+                if self.nodes[col][row] is not None and (col != player_x or row != player_y):
+                    pygame.draw.rect(self.world.screen, self.EXPANDED_NODE_COLOR, rect)
+        
     
     def expand(self, current_node_pos: list, expanded_node_pos: list, target_position: list):
         x1, y1 = current_node_pos
@@ -52,6 +69,11 @@ class PathPlanning(ABC):
 
         self.queue.append(expanded_node_pos)
         self.sort_queue()
+        
+        # Pygame
+        self.draw_expansion()
+        pygame.display.flip()
+        pygame.time.wait(20)  # Slow down the game a bit 
     
     
     @abstractmethod
@@ -66,7 +88,7 @@ class PathPlanning(ABC):
     def shortest_path(self, start, target):
         pass
     
-    def reconstruct_path(self, start_pos: list, final_pos: list, current_node: AbsNode) -> list:
+    def reconstruct_path(self, start_pos: list, final_pos: list, final_node: AbsNode) -> list:
         """
         
         Retrace the path taken by the path planning algorithm
@@ -75,13 +97,11 @@ class PathPlanning(ABC):
         
         path = []
         
-        while current_node != start_pos:
-            x, y = current_node
-            current_node_object = self.nodes[x][y]
-            
-            parent_index = current_node_object.parent.index
+        current_node = final_node.parent
+        while current_node.index != start_pos:  
+            parent_index = current_node.index
             path.append(parent_index)
-            current_node = parent_index
+            current_node = current_node.parent
         
         path = path[::-1]
         path.append(final_pos)
