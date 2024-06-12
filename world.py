@@ -22,7 +22,7 @@ class World():
         # World measurements
         self.width = 800
         self.height = 800
-        self.maze_size = 20
+        self.maze_size = 30
         self.block_size = self.width // self.maze_size
         random.seed(seed)
         
@@ -54,6 +54,9 @@ class World():
         # Load treasure image
         treasure_image = pygame.image.load('treasure.png')
         self.treasure_image = pygame.transform.scale(treasure_image, (self.block_size, self.block_size))
+        
+        player_image = pygame.image.load('rafa.jpeg')
+        self.player_image = pygame.transform.scale(player_image, (self.block_size, self.block_size))
 
         # Generating treasures
         self.treasures = []
@@ -118,7 +121,8 @@ class World():
                 else:
                     pygame.draw.rect(self.screen, self.GROUND_COLOR, rect)
                 if [col, row] == [px, py]:
-                    pygame.draw.rect(self.screen, self.PLAYER_COLOR, rect)
+                    self.screen.blit(self.player_image, (col*self.block_size, row*self.block_size))
+                    #pygame.draw.rect(self.screen, self.PLAYER_COLOR, rect)
                 if [col, row] in self.treasures:
                     self.screen.blit(self.treasure_image, (col*self.block_size, row*self.block_size))
                 

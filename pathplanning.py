@@ -54,6 +54,8 @@ class PathPlanning(ABC):
                 rect = pygame.Rect(col*self.world.block_size, row*self.world.block_size, self.world.block_size, self.world.block_size)
                 if self.nodes[col][row] is not None and (col != player_x or row != player_y):
                     pygame.draw.rect(self.world.screen, self.EXPANDED_NODE_COLOR, rect)
+                    if [col, row] in self.world.treasures:
+                        self.world.screen.blit(self.world.treasure_image, (col*self.world.block_size, row*self.world.block_size))
         
     
     def expand(self, current_node_pos: list, expanded_node_pos: list, target_position: list):
@@ -73,7 +75,6 @@ class PathPlanning(ABC):
         # Pygame
         self.draw_expansion()
         pygame.display.flip()
-        pygame.time.wait(20)  # Slow down the game a bit 
     
     
     @abstractmethod
