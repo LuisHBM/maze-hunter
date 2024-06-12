@@ -59,6 +59,7 @@ class PathPlanning(ABC):
         
     
     def expand(self, current_node_pos: list, expanded_node_pos: list, target_position: list):
+        self.nodes_count += 1
         x1, y1 = current_node_pos
         x2, y2 = expanded_node_pos
 

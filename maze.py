@@ -1,8 +1,8 @@
 # Extenal libraries
 import pygame
 import random
-import sys
 import os
+import copy
 
 # Internal libraries
 from world import World
@@ -10,6 +10,22 @@ from dijkstra import Dijkstra
 from astar import AStar
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+
+
+def write_num_of_nodes(numero, nome_arquivo):
+    """
+    Escreve um número float em uma nova linha em um arquivo.
+
+    Args:
+    numero (float): O número float a ser escrito no arquivo.
+    nome_arquivo (str): Nome do arquivo onde o float será escrito.
+    """
+    try:
+        with open(nome_arquivo, 'a') as arquivo:  # Use 'a' para abrir o arquivo em modo de anexação
+            arquivo.write(f"{numero}\n")
+        print(f"O float {numero} foi escrito no arquivo {nome_arquivo} com sucesso.")
+    except Exception as e:
+        print(f"Ocorreu um erro ao escrever no arquivo: {e}")
 
 class Maze():
     
@@ -128,14 +144,14 @@ class Maze():
         
         return filtered_treasures             
     
-    def calculate_path(self):
+    def calculate_path(self, target:float):
          
         player_pos = self.world.player.position
         
         if self.mode == self.ASTAR:
-            self.path = self.astar.shortest_path(player_pos, self.filtered_treasures())
+            self.path = self.astar.shortest_path(player_pos, target)
         elif self.mode == self.DIJKSTRA:
-            self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
+            self.path = self.dijkstra.shortest_path(player_pos, [target])
     
     
     def game_loop(self):
@@ -145,7 +161,7 @@ class Maze():
             self.world.draw_world(self.path)
             pygame.display.flip()
             
-            self.calculate_path()
+            self.calculate_path(self.world.treasures[0])
             
             while (len(self.path) > 0):
             
@@ -173,6 +189,13 @@ class Maze():
                 self.world.draw_world(self.path)
                 pygame.display.flip()
                 pygame.time.wait(100)  # Slow down the game a bit 
+            
+            if (self.mode == self.DIJKSTRA):
+                write_num_of_nodes(self.dijkstra.nodes_count, "dijkstra_nodes.txt")
+                self.dijkstra.nodes_count = 0
+            elif (self.mode == self.ASTAR):
+                write_num_of_nodes(self.astar.nodes_count, "astar_nodes.txt")
+                self.astar.nodes_count = 0
         
         #print(f"Step: {self.steps}")
         #print(f"Score: {self.score}")
@@ -181,24 +204,24 @@ class Maze():
         found_treasures = self.world.num_treasures - len(self.world.treasures)
         print(f"Found {found_treasures} treasures")
         print(f"Final score: {self.score}")
-        pygame.quit()
 
 
 if __name__ == "__main__":
     
-    os.system("clear")
-    
-    mode = int(sys.argv[1])
-    
-    print("Chosen mode: ", end="")
-    if(mode == Maze.ASTAR):
-        print("Astar")
-    elif(mode == Maze.DIJKSTRA):
-        print("Dijkstra")
-    else:
-        print("None")
-    print("")
-    
-    maze = Maze(800)
-    maze.mode = mode
-    maze.game_loop()
+    for _ in range(0, 50):
+        seed = 500
+        maze = Maze(seed)
+        
+        random.seed(None)
+        random.shuffle(maze.world.treasures)
+        
+        treasures = copy.deepcopy(maze.world.treasures)
+        maze.mode = Maze.DIJKSTRA
+        maze.game_loop()
+        
+        maze = Maze(seed)
+        maze.world.treasures = treasures
+        maze.mode = Maze.ASTAR
+        maze.game_loop()
+        
+    pygame.quit()
