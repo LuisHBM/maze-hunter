@@ -170,7 +170,7 @@ class AStar(PathPlanning):
             
             # Current node will be the last node
             x, y = target_reached
-            cost = self.nodes[x][y].get_f_cost()
+            cost = self.nodes[x][y].g_cost
             
             if cost <= lower_cost:
                 lower_cost = cost

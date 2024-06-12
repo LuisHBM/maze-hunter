@@ -199,6 +199,6 @@ if __name__ == "__main__":
         print("None")
     print("")
     
-    maze = Maze(800)
+    maze = Maze(5)
     maze.mode = mode
     maze.game_loop()
