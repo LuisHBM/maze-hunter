@@ -24,7 +24,7 @@ class Maze():
     DIJKSTRA = 1
     ASTAR = 2
     
-    def __init__(self, maze_seed: int) -> None:
+    def __init__(self, maze_seed: int=None) -> None:
         
         self.world = World(maze_seed)
         self.running = True
@@ -112,28 +112,35 @@ class Maze():
         return movement
     
     
-    def filtered_treasures(self) -> list:
+    def get_best_treasure(self) -> list:
         
-        filtered_treasures = []
+        treasures = self.world.get_treasures_out_of_water()
         
-        for treasure_pos in self.world.treasures:
-            x, y = treasure_pos
-            is_stuck = self.world.map[x-1][y] == self.world.legend["WALL"] if x-1 >= 0 else True
-            is_stuck = is_stuck and (self.world.map[x+1][y] == self.world.legend["WALL"] if x+1 < self.world.maze_size  else True)
-            is_stuck = is_stuck and (self.world.map[x][y-1] == self.world.legend["WALL"] if y-1 >= 0 else True)
-            is_stuck = is_stuck and (self.world.map[x][y+1] == self.world.legend["WALL"] if y+1 < 0 else True)
+        if len(treasures) < 1:
+            treasures = self.world.treasures
+        
+        closest_treasure = []
+        lowest_distance = sys.maxsize
+        player_pos = self.world.player.position
+        
+        for treasure in treasures:
+            x_t, y_t = treasure
+            x_p, y_p = player_pos
             
-            if not is_stuck:
-                filtered_treasures.append(treasure_pos)
+            d = ((x_t - x_p)**2 + (y_t - y_p)**2)**0.5
+            if d < lowest_distance:
+                closest_treasure = treasure
+                lowest_distance = d
         
-        return filtered_treasures             
-    
+        return closest_treasure
+            
+            
     def calculate_path(self):
          
         player_pos = self.world.player.position
         
         if self.mode == self.ASTAR:
-            self.path = self.astar.shortest_path(player_pos, self.filtered_treasures())
+            self.path = self.astar.shortest_path(player_pos, self.get_best_treasure())
         elif self.mode == self.DIJKSTRA:
             self.path = self.dijkstra.shortest_path(player_pos, self.world.treasures)
     
@@ -145,18 +152,15 @@ class Maze():
             self.world.draw_world(self.path)
             pygame.display.flip()
             
+            # Calls path finding functions
             self.calculate_path()
             
             while (len(self.path) > 0):
-            
-                #print(f"Step: {self.steps}")
-                #print(f"Score: {self.score}")
                 
                 target = self.path.pop(0)
                 move = self.move_to(target)
                 
                 if move != 0:
-                    #print(f"Movement: {move}")
                     self.update_score()
                     self.steps += 1
                 
@@ -172,15 +176,13 @@ class Maze():
                 
                 self.world.draw_world(self.path)
                 pygame.display.flip()
-                pygame.time.wait(100)  # Slow down the game a bit 
-        
-        #print(f"Step: {self.steps}")
-        #print(f"Score: {self.score}")
-        #print("")
+                pygame.time.wait(100)
         
         found_treasures = self.world.num_treasures - len(self.world.treasures)
         print(f"Found {found_treasures} treasures")
         print(f"Final score: {self.score}")
+        print(f"Steps: {self.steps}")
+        
         pygame.quit()
 
 
@@ -199,6 +201,6 @@ if __name__ == "__main__":
         print("None")
     print("")
     
-    maze = Maze(5)
+    maze = Maze()
     maze.mode = mode
     maze.game_loop()

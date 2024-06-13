@@ -22,7 +22,7 @@ class World():
         # World measurements
         self.width = 800
         self.height = 800
-        self.maze_size = 30
+        self.maze_size = 20
         self.block_size = self.width // self.maze_size
         random.seed(seed)
         
@@ -125,7 +125,8 @@ class World():
                     #pygame.draw.rect(self.screen, self.PLAYER_COLOR, rect)
                 if [col, row] in self.treasures:
                     self.screen.blit(self.treasure_image, (col*self.block_size, row*self.block_size))
-                
+              
+  
     def can_move_to(self, position) -> bool:
         
         # Checks if the movement is more than 1 block
@@ -139,3 +140,13 @@ class World():
             return True
         else:
             return False
+    
+    
+    def get_treasures_out_of_water(self) -> list:
+        treasures_out_of_water = []
+        
+        for treasure in self.treasures:
+            if not treasure in self.water:
+                treasures_out_of_water.append(treasure)
+        
+        return treasures_out_of_water

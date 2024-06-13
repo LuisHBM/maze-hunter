@@ -1,4 +1,4 @@
-from pathplanning import AbsNode, PathPlanning
+from pathfinding import AbsNode, PathFinding
 from world import World
 
 class Node(AbsNode):
@@ -7,7 +7,7 @@ class Node(AbsNode):
         super().__init__()
         self.g_cost = 0
 
-class Dijkstra(PathPlanning):
+class Dijkstra(PathFinding):
     
     def __init__(self, world: World) -> None:
         super().__init__(world)
