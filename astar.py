@@ -23,19 +23,10 @@ class AStar(PathFinding):
         x, y = node_index
         node.g_cost = node.parent.g_cost + (1 if self.matrix[x][y] == self.legend["EMPTY"] else 5)
         
-        """
-        Manhattan geometry
-        https://en.wikipedia.org/wiki/Taxicab_geometry
-        
-        [x1,y1] -> goal
-        [x0,y0] -> current position
-        
-        h(n) = |x1 - x0| + |y1 - y0|
-        """
-        #abs(x1 - x) + abs(y1 - y)
-        
         x1, y1 = target_pos
         node.h_cost = ((x1 - x)**2 + (y1 - y)**2)**0.5
+        
+        self.sort_queue()
     
     
     def sort_queue(self):
@@ -64,7 +55,7 @@ class AStar(PathFinding):
                 if node_j.get_f_cost() < node_i.get_f_cost():
                     swap_nodes = True
                 elif node_j.get_f_cost() == node_i.get_f_cost():
-                    if node_j.g_cost < node_i.g_cost:
+                    if node_j.h_cost < node_i.h_cost:
                         swap_nodes = True
                 
                 if(swap_nodes):

@@ -39,6 +39,7 @@ class Maze():
         self.world.draw_world()
         
         self.mode = 0
+        self.min_remaining_treasures = 4
     
     
     def print_score(self):
@@ -57,6 +58,9 @@ class Maze():
             print("Treasure found! Treasures left:", len(self.world.treasures))
             self.score += 50
             self.print_score()
+            
+            if len(self.world.treasures) == self.min_remaining_treasures:
+                self.running = False
             
         if [px, py] in self.world.water:
             self.score -= 5
@@ -155,7 +159,7 @@ class Maze():
             # Calls path finding functions
             self.calculate_path()
             
-            while (len(self.path) > 0):
+            while (len(self.path) > 0 and self.running):
                 
                 target = self.path.pop(0)
                 move = self.move_to(target)
@@ -163,10 +167,6 @@ class Maze():
                 if move != 0:
                     self.update_score()
                     self.steps += 1
-                
-                # Checks if the player already collected 8 treasures
-                if len(self.world.treasures) <= 4:
-                    self.running = False
                 
                 if not self.world.treasures:
                     self.running = False
@@ -190,15 +190,22 @@ if __name__ == "__main__":
     
     os.system("clear")
     
-    mode = int(sys.argv[1])
-    
-    print("Chosen mode: ", end="")
-    if(mode == Maze.ASTAR):
-        print("Astar")
-    elif(mode == Maze.DIJKSTRA):
-        print("Dijkstra")
+    if(len(sys.argv) > 1):
+        mode = int(sys.argv[1])
     else:
-        print("None")
+        print("try: python3 maze {mode}")
+        print("Modes: \n(1) -> Dijkstra\n(2) -> Astar")
+        exit(1)
+    
+    print("Mode", end="")
+    if(mode == Maze.ASTAR):
+        print(": Astar")
+    elif(mode == Maze.DIJKSTRA):
+        print(": Dijkstra")
+    else:
+        print(" doesn't exists")
+        print("try: 1-Dijkstra, 2-Astar")
+        exit(1)
     print("")
     
     maze = Maze()
